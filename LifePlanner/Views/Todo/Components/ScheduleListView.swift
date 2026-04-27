@@ -11,6 +11,7 @@ struct ScheduleListView: View {
 
     @State private var showAddSchedule: Bool = false
     @State private var selectedDate: Date = Date()
+    @State private var selectedSchedule: TodoItem? = nil
 
     var schedulesForSelectedDate: [TodoItem] {
         let calendar = Calendar.current
@@ -46,6 +47,8 @@ struct ScheduleListView: View {
                                 Section(header: Text(String(format: "%02d:00", hour))) {
                                     ForEach(hourSchedules) { schedule in
                                         ScheduleRowView(schedule: schedule)
+                                            .contentShape(Rectangle())
+                                            .onTapGesture { selectedSchedule = schedule }
                                             .swipeActions(edge: .trailing) {
                                                 Button(role: .destructive) {
                                                     deleteSchedule(schedule)
@@ -80,6 +83,9 @@ struct ScheduleListView: View {
         .sheet(isPresented: $showAddSchedule) {
             AddTodoView()
         }
+        .sheet(item: $selectedSchedule) { schedule in
+            TodoDetailView(item: schedule)
+        }
     }
 
     private func deleteSchedule(_ schedule: TodoItem) {
@@ -88,6 +94,11 @@ struct ScheduleListView: View {
 }
 
 #Preview {
-    ScheduleListView()
-        .modelContainer(for: [TodoItem.self, Goal.self], inMemory: true)
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: TodoItem.self, Goal.self,
+        configurations: config
+    )
+    return ScheduleListView()
+        .modelContainer(container)
 }
