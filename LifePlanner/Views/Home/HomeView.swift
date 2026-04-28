@@ -14,6 +14,7 @@ struct HomeView: View {
 
     @State private var aiMessage: String = ""
     @State private var isLoadingAI: Bool = false
+    @State private var selectedTodo: TodoItem? = nil
 
     var todayTodos: [TodoItem] {
         let calendar = Calendar.current
@@ -68,11 +69,13 @@ struct HomeView: View {
 
                         TodayTodoCard(
                             todos: todayTodos,
-                            onToggle: toggleTodo
+                            onToggle: toggleTodo,
+                            onTap: { todo in selectedTodo = todo }
                         )
 
                         DayScheduleCard(
-                            schedules: todaySchedules
+                            schedules: todaySchedules,
+                            onTap: { schedule in selectedTodo = schedule }
                         )
                     }
                     .padding(.vertical)
@@ -85,6 +88,9 @@ struct HomeView: View {
                         .font(.custom("Zapfino", size: 20))
                         .foregroundColor(AppStyle.accentBrown)
                 }
+            }
+            .sheet(item: $selectedTodo) { todo in
+                TodoDetailView(item: todo)
             }
         }
     }
@@ -153,18 +159,14 @@ struct HomeView: View {
 
     let todo1 = TodoItem(title: "Java Silverの問題集を解く", isSchedule: false)
     let todo2 = TodoItem(title: "ポートフォリオのREADMEを書く", isSchedule: false)
-    let todo3 = TodoItem(title: "GitHubにプッシュする", isSchedule: false)
     container.mainContext.insert(todo1)
     container.mainContext.insert(todo2)
-    container.mainContext.insert(todo3)
 
     let cal = Calendar.current
-    let schedule1 = TodoItem(title: "営業との打ち合わせ", isSchedule: true, scheduledAt: cal.date(bySettingHour: 10, minute: 0, second: 0, of: Date()))
-    let schedule2 = TodoItem(title: "Java学習", isSchedule: true, scheduledAt: cal.date(bySettingHour: 14, minute: 0, second: 0, of: Date()))
-    let schedule3 = TodoItem(title: "LifePlannerの開発", isSchedule: true, scheduledAt: cal.date(bySettingHour: 19, minute: 0, second: 0, of: Date()))
+    let schedule1 = TodoItem(title: "営業との打ち合わせ", isSchedule: true, scheduledAt: cal.date(bySettingHour: 10, minute: 0, second: 0, of: Date()), scheduledEnd: cal.date(bySettingHour: 11, minute: 0, second: 0, of: Date()))
+    let schedule2 = TodoItem(title: "Java学習", isSchedule: true, scheduledAt: cal.date(bySettingHour: 14, minute: 0, second: 0, of: Date()), scheduledEnd: cal.date(bySettingHour: 16, minute: 0, second: 0, of: Date()))
     container.mainContext.insert(schedule1)
     container.mainContext.insert(schedule2)
-    container.mainContext.insert(schedule3)
 
     return HomeView()
         .modelContainer(container)

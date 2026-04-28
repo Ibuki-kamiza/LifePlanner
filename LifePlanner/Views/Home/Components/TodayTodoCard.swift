@@ -7,6 +7,7 @@ import SwiftUI
 struct TodayTodoCard: View {
     let todos: [TodoItem]
     let onToggle: (TodoItem) -> Void
+    let onTap: (TodoItem) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -26,18 +27,22 @@ struct TodayTodoCard: View {
                     .foregroundColor(AppStyle.secondaryText)
             } else {
                 ForEach(todos) { todo in
-                    Button(action: { onToggle(todo) }) {
-                        HStack {
+                    HStack {
+                        Button(action: { onToggle(todo) }) {
                             Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "checkmark.circle")
                                 .foregroundColor(.blue)
-                            Text(todo.title)
-                                .font(AppStyle.bodyFont)
-                                .strikethrough(todo.isCompleted)
-                                .foregroundColor(todo.isCompleted ? AppStyle.secondaryText : AppStyle.primaryText)
-                            Spacer()
                         }
+                        .buttonStyle(.plain)
+
+                        Text(todo.title)
+                            .font(AppStyle.bodyFont)
+                            .strikethrough(todo.isCompleted)
+                            .foregroundColor(todo.isCompleted ? AppStyle.secondaryText : AppStyle.primaryText)
+
+                        Spacer()
                     }
-                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
+                    .onTapGesture { onTap(todo) }
                 }
             }
         }
@@ -51,6 +56,7 @@ struct TodayTodoCard: View {
 #Preview {
     TodayTodoCard(
         todos: [],
-        onToggle: { _ in }
+        onToggle: { _ in },
+        onTap: { _ in }
     )
 }
