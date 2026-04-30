@@ -11,7 +11,7 @@ struct SettingsView: View {
     @Query private var personalities: [AIPersonality]
 
     @State private var name: String = ""
-    @State private var birthYear: Int = 2000
+    @State private var birthDate: Date = Date()
     @State private var occupation: String = ""
     @State private var aiName: String = "ライフコーチ"
     @State private var characterType: String = "counselor"
@@ -22,18 +22,20 @@ struct SettingsView: View {
     let characterTypes = ["mentor": "メンター", "coach": "コーチ", "friend": "友達", "counselor": "カウンセラー"]
     let tones = ["gentle": "優しい", "friendly": "フレンドリー", "strict": "厳しめ"]
     let languages = ["ja": "日本語", "en": "英語"]
-    let currentYear = Calendar.current.component(.year, from: Date())
 
     var body: some View {
-        NavigationStack {
+        ZStack {
+            AppStyle.background
+                .ignoresSafeArea()
+
             Form {
                 Section(header: Text("プロフィール")) {
                     TextField("名前", text: $name)
-                    Picker("生まれ年", selection: $birthYear) {
-                        ForEach((1950...currentYear).reversed(), id: \.self) { year in
-                            Text("\(year)年").tag(year)
-                        }
-                    }
+                    DatePicker(
+                        "生年月日",
+                        selection: $birthDate,
+                        displayedComponents: .date
+                    )
                     TextField("職業・目標", text: $occupation)
                 }
 
@@ -68,15 +70,23 @@ struct SettingsView: View {
                     }
                 }
             }
-            .navigationTitle("設定")
+            .scrollContentBackground(.hidden)
             .onAppear(perform: loadSettings)
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("設定")
+                    .font(.headline)
+                    .foregroundColor(AppStyle.accentBrown)
+            }
         }
     }
 
     private func loadSettings() {
         if let profile = profiles.first {
             name = profile.name
-            birthYear = profile.birthYear
+            birthDate = profile.birthDate
             occupation = profile.occupation
         }
         if let personality = personalities.first {
@@ -92,10 +102,10 @@ struct SettingsView: View {
 
         if let profile = profiles.first {
             profile.name = name
-            profile.birthYear = birthYear
+            profile.birthDate = birthDate
             profile.occupation = occupation
         } else {
-            let newProfile = UserProfile(name: name, birthYear: birthYear, occupation: occupation)
+            let newProfile = UserProfile(name: name, birthDate: birthDate, occupation: occupation)
             modelContext.insert(newProfile)
         }
 

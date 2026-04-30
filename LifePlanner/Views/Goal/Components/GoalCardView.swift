@@ -8,8 +8,14 @@ struct GoalCardView: View {
     let goal: Goal
     let currentYear: Int
 
-    var targetYearLabel: String {
-        "\(currentYear + goal.targetYear)年（\(goal.targetYear)年後）"
+    var targetLabel: String {
+        if goal.usesSpecificDate, let date = goal.targetDate {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy年M月d日"
+            let yearsLeft = Calendar.current.dateComponents([.year], from: Date(), to: date).year ?? 0
+            return "\(formatter.string(from: date))（\(yearsLeft)年後）"
+        }
+        return "\(currentYear + goal.targetYear)年（\(goal.targetYear)年後）"
     }
 
     var categoryColor: Color {
@@ -37,7 +43,7 @@ struct GoalCardView: View {
 
                 Spacer()
 
-                Text(targetYearLabel)
+                Text(targetLabel)
                     .font(AppStyle.captionFont)
                     .foregroundColor(AppStyle.secondaryText)
             }

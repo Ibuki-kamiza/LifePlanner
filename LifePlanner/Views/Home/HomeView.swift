@@ -16,6 +16,17 @@ struct HomeView: View {
     @State private var isLoadingAI: Bool = false
     @State private var selectedTodo: TodoItem? = nil
 
+    var isBirthday: Bool {
+        guard let profile = profiles.first else { return false }
+        let calendar = Calendar.current
+        let today = Date()
+        let birthMonth = calendar.component(.month, from: profile.birthDate)
+        let birthDay = calendar.component(.day, from: profile.birthDate)
+        let todayMonth = calendar.component(.month, from: today)
+        let todayDay = calendar.component(.day, from: today)
+        return birthMonth == todayMonth && birthDay == todayDay
+    }
+
     var todayTodos: [TodoItem] {
         let calendar = Calendar.current
         return todos.filter {
@@ -52,6 +63,33 @@ struct HomeView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
+
+                        // 誕生日バナー
+                        if isBirthday {
+                            HStack {
+                                Text("🎂")
+                                    .font(.title)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("お誕生日おめでとうございます！🎉")
+                                        .font(AppStyle.headlineFont)
+                                        .foregroundColor(.white)
+                                    Text("素敵な一日になりますように✨")
+                                        .font(AppStyle.captionFont)
+                                        .foregroundColor(.white.opacity(0.9))
+                                }
+                                Spacer()
+                            }
+                            .padding(AppStyle.cardPadding)
+                            .background(
+                                LinearGradient(
+                                    colors: [.pink, .purple],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(AppStyle.cornerRadius)
+                            .padding(.horizontal, AppStyle.horizontalPadding)
+                        }
 
                         AIAdviceCard(
                             aiName: personalities.first?.name ?? "AIアシスタント",
@@ -107,6 +145,8 @@ struct HomeView: View {
 
         isLoadingAI = true
 
+        let birthdayText = isBirthday ? "今日はユーザーの誕生日です。お祝いの言葉を添えてください。" : ""
+
         let profileText = profiles.first.map {
             "ユーザー名：\($0.name)、職業・目標：\($0.occupation)"
         } ?? ""
@@ -119,6 +159,7 @@ struct HomeView: View {
         \(profileText)
         \(goalText)
         今日のTodo数：\(todayTodos.count)件
+        \(birthdayText)
 
         上記のユーザーに今日の一言アドバイスを50文字以内で伝えてください。
         """
@@ -147,7 +188,7 @@ struct HomeView: View {
         configurations: config
     )
 
-    let profile = UserProfile(name: "Ibuki", birthYear: 2000, occupation: "エンジニア志望")
+    let profile = UserProfile(name: "Ibuki", birthDate: Date(), occupation: "エンジニア志望")
     container.mainContext.insert(profile)
 
     let personality = AIPersonality(name: "ライフコーチ", characterType: "counselor", tone: "gentle", language: "ja")
@@ -164,9 +205,7 @@ struct HomeView: View {
 
     let cal = Calendar.current
     let schedule1 = TodoItem(title: "営業との打ち合わせ", isSchedule: true, scheduledAt: cal.date(bySettingHour: 10, minute: 0, second: 0, of: Date()), scheduledEnd: cal.date(bySettingHour: 11, minute: 0, second: 0, of: Date()))
-    let schedule2 = TodoItem(title: "Java学習", isSchedule: true, scheduledAt: cal.date(bySettingHour: 14, minute: 0, second: 0, of: Date()), scheduledEnd: cal.date(bySettingHour: 16, minute: 0, second: 0, of: Date()))
     container.mainContext.insert(schedule1)
-    container.mainContext.insert(schedule2)
 
     return HomeView()
         .modelContainer(container)
